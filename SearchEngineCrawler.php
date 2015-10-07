@@ -1,11 +1,13 @@
 <?php
 
-namespace DavidRojo\SearchEngineCrawler\Utils;
+namespace DavidRojo\SearchEngineCrawler;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use GuzzleHttp\Cookie\FileCookieJar;
+use GuzzleHttp\Client;
 
-abstract class SearchEngineCrawler
+class SearchEngineCrawler
 {
     /**
      * Limits the amount of results to search for the current keyword
@@ -32,18 +34,30 @@ abstract class SearchEngineCrawler
     protected $engine = null;
 
     /**
+     * Keyword to search
+     * @var string
+     */
+    protected $keyword = "";
+
+    /**
+     * Crawler options
+     * @var Array
+     */
+    protected $crawlerOptions = [
+        'headers' => [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36'
+        ]
+    ];
+
+    /**
      * Constructor
      * @param String
      */
     public function __construct($type){
         $this->type = $type;
+        $class = __NAMESPACE__.'\\Engines\\'.$type.'Engine';
 
-        if (class_exists($type)){
-            $this->engine = new $type();
-        }
-        else{
-            throw new Exception("Crawler ".$type." not found");
-        }
+        $this->engine = new $class();
     }
 
     /**
@@ -52,6 +66,7 @@ abstract class SearchEngineCrawler
      */
     public function next(){
         if ($this->engine->hasNextPage()){
+            echo "IN";
             $newPage = $this->fetchPage();
             $this->engine->parsePage($newPage);
             if ($this->engine->hasResults()){
@@ -68,8 +83,14 @@ abstract class SearchEngineCrawler
     }
 
     public function fetchPage(){
-        $url = $this->engine->buildUrl($this->fetchUrl, $this->keyword, $this->currentPage, $this->currentPage * $this->rpp, $this->rpp);
-        return file_get_contents($url);
+        $url = $this->engine->buildUrl($this->keyword, $this->currentPage, $this->currentPage * $this->rpp, $this->rpp);
+        $code = $this->fetchPageCode($url);
+        return mb_convert_encoding($code, 'HTML-ENTITIES', "UTF-8");
+    }
+
+    public function fetchPageCode($url){
+        $client = new Client();
+        return $client->get($url, $this->crawlerOptions)
     }
 
 
@@ -90,7 +111,7 @@ abstract class SearchEngineCrawler
      *
      * @return self
      */
-    protected function setName(String $name)
+    public function setName(String $name)
     {
         $this->name = $name;
 
@@ -110,11 +131,11 @@ abstract class SearchEngineCrawler
     /**
      * Sets the Fetch url
      *
-     * @param [type] $fetchUrl the fetch url
+     * @param String $fetchUrl the fetch url
      *
      * @return self
      */
-    protected function setFetchUrl([type] $fetchUrl)
+    public function setFetchUrl(String $fetchUrl)
     {
         $this->fetchUrl = $fetchUrl;
 
@@ -138,7 +159,7 @@ abstract class SearchEngineCrawler
      *
      * @return self
      */
-    protected function setMaxResults(Int $maxResults)
+    public function setMaxResults(Int $maxResults)
     {
         $this->maxResults = $maxResults;
 
@@ -163,5 +184,29 @@ abstract class SearchEngineCrawler
     public function getRpp()
     {
         return $this->rpp;
+    }
+
+    /**
+     * Gets the Keyword to search.
+     *
+     * @return string
+     */
+    public function getKeyword()
+    {
+        return $this->keyword;
+    }
+
+    /**
+     * Sets the Keyword to search.
+     *
+     * @param string $keyword the keyword
+     *
+     * @return self
+     */
+    public function setKeyword($keyword)
+    {
+        $this->keyword = $keyword;
+
+        return $this;
     }
 }

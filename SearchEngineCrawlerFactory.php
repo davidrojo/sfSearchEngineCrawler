@@ -1,6 +1,6 @@
 <?php
 
-namespace DavidRojo\SearchEngineCrawler\Utils;
+namespace DavidRojo\SearchEngineCrawler;
 
 
 class SearchEngineCrawlerFactory

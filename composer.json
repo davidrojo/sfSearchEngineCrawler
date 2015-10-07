@@ -10,10 +10,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "davidrojo\\sfSearchEngineCrawler\\": ""
+            "DavidRojo\\SearchEngineCrawler\\": ""
         }
     },
     "require": {
-        "symfony/http-kernel": "~2.3"
+        "symfony/dom-crawler": "^2.7",
+        "guzzlehttp/guzzle": "^6.0",
+        "symfony/css-selector": "^2.7"
     }
 }

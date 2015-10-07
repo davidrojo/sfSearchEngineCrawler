@@ -1,6 +1,6 @@
 <?php
 
-namespace DavidRojo\SearchEngineCrawler\Utils;
+namespace DavidRojo\SearchEngineCrawler\Engines;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -36,16 +36,23 @@ abstract class SearchEngine
      */
     protected $results = [];
 
+    /**
+     * Checks if ended results
+     * @var boolean
+     */
+    protected $finished = false;
 
-    public function buildUrl($url, $keyword, $currentPage, $currentIndex, $rpp){
+    public function buildUrl($keyword, $currentPage, $currentIndex, $rpp){
         return str_replace(
             ['[KEYWORD]', '[PAGE]', '[FROM]', '[TO]', '[RPP]'],
-            [$keyword, $currentPage, $currentIndex, $currentIndex + $rpp, $rpp],
-            $url;
-        )
+            [urlencode($keyword), $currentPage, $currentIndex, $currentIndex + $rpp, $rpp],
+            $this->fetchUrl
+        );
     }
 
-    public abstract function hasNextPage();
+    public function hasNextPage(){
+        return !$this->finished;
+    }
 
     public abstract function parsePage($content);
 
