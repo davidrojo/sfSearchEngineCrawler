@@ -1,0 +1,19 @@
+{
+    "name": "davidrojo/sfSearchEngineCrawler",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors":[
+        {
+            "name": "David Rojo",
+            "email": "david.rojo.gonzalez@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "davidrojo\\sfSearchEngineCrawler\\": ""
+        }
+    },
+    "require": {
+        "symfony/http-kernel": "~2.3"
+    }
+}
