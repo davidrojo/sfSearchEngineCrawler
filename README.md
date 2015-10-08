@@ -7,7 +7,7 @@ Search engine crawler for symfony
 
 Add requirement:
 
-```
+```json
 {
   "require": {
    "davidrojo/sfSearchEngineCrawler": "dev-master"
@@ -23,7 +23,7 @@ $ composer require davidrojo/sfSearchEngineCrawler
 
 ## Usage
 
-```
+```php
   // Create a factory engine crawler
   $factory = new SearchEngineCrawlerFactory();
   
