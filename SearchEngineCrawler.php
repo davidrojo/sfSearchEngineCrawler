@@ -44,11 +44,7 @@ class SearchEngineCrawler
      * Crawler options
      * @var Array
      */
-    protected $crawlerOptions = [
-        'headers' => [
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36'
-        ]
-    ];
+    protected $crawlerOptions = [];
 
     /**
      * Constructor
@@ -108,6 +104,24 @@ class SearchEngineCrawler
         return $response->getBody(true);
     }
 
+    /**
+     * Adds a header value to the requests
+     * @param string $key   Header key
+     * @param string $value Header value
+     */
+    public function setHeader($key, $value){
+        $this->crawlerOptions['headers'][$key] = $value;
+    }
+
+    /**
+     * Sets a Guzzle request option.
+     * See more: http://guzzle3.readthedocs.org/http-client/client.html#request-options
+     * @param string $key   Guzzle request option key
+     * @param string $value Guzzle request option value
+     */
+    public function setCrawlerOption($key, $value){
+        $this->crawlerOptions[$key] = $value;
+    }
 
     /**
      * Gets the Crawler name.
