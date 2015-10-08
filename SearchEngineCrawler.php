@@ -9,11 +9,6 @@ use GuzzleHttp\Client;
 
 class SearchEngineCrawler
 {
-    /**
-     * Limits the amount of results to search for the current keyword
-     * @var Int
-     */
-    protected $maxResults = 100;
 
     /**
      * Current search page
@@ -40,6 +35,12 @@ class SearchEngineCrawler
     protected $keyword = "";
 
     /**
+     * Timeout between calls in miliseconds
+     * @var integer
+     */
+    protected $timeout = 500;
+
+    /**
      * Crawler options
      * @var Array
      */
@@ -57,7 +58,19 @@ class SearchEngineCrawler
         $this->type = $type;
         $class = __NAMESPACE__.'\\Engines\\'.$type.'Engine';
 
-        $this->engine = new $class();
+        $this->engine = new $class($this->maxResults);
+    }
+
+    public function search($keyword = null){
+        if($keyword != null){
+            $this->keyword = $keyword;
+        }
+
+        while ($this->next() && $this->currentPage < 5){
+            continue;
+        }
+
+        return $this->engine->getResults();
     }
 
     /**
@@ -66,11 +79,11 @@ class SearchEngineCrawler
      */
     public function next(){
         if ($this->engine->hasNextPage()){
-            echo "IN";
             $newPage = $this->fetchPage();
             $this->engine->parsePage($newPage);
             if ($this->engine->hasResults()){
                 $this->currentPage++;
+                usleep($this->timeout);
                 return true;
             }
             else{
@@ -83,14 +96,16 @@ class SearchEngineCrawler
     }
 
     public function fetchPage(){
-        $url = $this->engine->buildUrl($this->keyword, $this->currentPage, $this->currentPage * $this->rpp, $this->rpp);
+        $url = $this->engine->buildUrl($this->keyword, $this->currentPage, $this->engine->getResultsFetched(), $this->rpp);
+        echo "Fetching ".$url.'<br>';
         $code = $this->fetchPageCode($url);
         return mb_convert_encoding($code, 'HTML-ENTITIES', "UTF-8");
     }
 
     public function fetchPageCode($url){
         $client = new Client();
-        return $client->get($url, $this->crawlerOptions)
+        $response = $client->get($url, $this->crawlerOptions);
+        return $response->getBody(true);
     }
 
 
@@ -145,23 +160,23 @@ class SearchEngineCrawler
     /**
      * Gets the Limits the amount of results to search for the current keyword.
      *
-     * @return Int
+     * @return integer
      */
     public function getMaxResults()
     {
-        return $this->maxResults;
+        return $this->engine->getMaxResults();
     }
 
     /**
      * Sets the Limits the amount of results to search for the current keyword.
      *
-     * @param Int $maxResults the max results
+     * @param integer $maxResults the max results
      *
      * @return self
      */
-    public function setMaxResults(Int $maxResults)
+    public function setMaxResults($maxResults)
     {
-        $this->maxResults = $maxResults;
+        $this->engine->setMaxResults($maxResults);
 
         return $this;
     }
@@ -206,6 +221,30 @@ class SearchEngineCrawler
     public function setKeyword($keyword)
     {
         $this->keyword = $keyword;
+
+        return $this;
+    }
+
+    /**
+     * Gets the Timeout between calls in miliseconds.
+     *
+     * @return integer
+     */
+    public function getTimeout()
+    {
+        return $this->timeout;
+    }
+
+    /**
+     * Sets the Timeout between calls in miliseconds.
+     *
+     * @param integer $timeout the timeout
+     *
+     * @return self
+     */
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
 
         return $this;
     }

@@ -5,17 +5,17 @@ namespace DavidRojo\SearchEngineCrawler\Engines;
 use DavidRojo\SearchEngineCrawler\CrawlerResult;
 use Symfony\Component\DomCrawler\Crawler;
 
-class GoogleEngine extends SearchEngine{
+class YahooEngine extends SearchEngine{
 
-    protected $fetchUrl = "https://www.google.es/search?q=[KEYWORD]&start=[FROM]";
+    protected $fetchUrl = "https://es.search.yahoo.com/search?p=[KEYWORD]&b=[FROM]";
 
-	
-	public function parsePage($content){
+    
+    public function parsePage($content){
         // Set current content
-		$this->currentPageCode = $content;
+        $this->currentPageCode = $content;
 
         // Get results
-		$crawler = new Crawler();
+        $crawler = new Crawler();
         $crawler->addHtmlContent($content);
 
         $object = &$this;
@@ -23,7 +23,7 @@ class GoogleEngine extends SearchEngine{
         $fetched = $this->resultsFetched;
         $maxResults = $this->maxResults;
 
-        $crawler->filter('#search .rc')->each(function(Crawler $match, $i) use ($object){
+        $crawler->filter('#web > ol > li .algo')->each(function(Crawler $match, $i) use ($object){
             if ($this->finished){
                 return;
             }
@@ -38,7 +38,7 @@ class GoogleEngine extends SearchEngine{
             }
 
             // Get description
-            $descriptionMatch = $match->filter(".s .st");
+            $descriptionMatch = $match->filter(".compText");
             if ($descriptionMatch->count() == 1){
                 $r->setDescription($descriptionMatch->eq(0)->text());
             }
@@ -49,9 +49,18 @@ class GoogleEngine extends SearchEngine{
         });
 
         // Check if there are more pages to retrieve
-        if($crawler->filter('#pnnext')->count() == 0){
+        if($crawler->filter('.compPagination .next')->count() == 0){
+            echo "No next page";
             $this->finished = true;
         }
-	}
-	
+    }
+    
+
+    public function buildUrl($keyword, $currentPage, $currentIndex, $rpp){
+        return str_replace(
+            ['[KEYWORD]', '[FROM]'],
+            [urlencode($keyword), $currentIndex+1],
+            $this->fetchUrl
+        );
+    }
 }

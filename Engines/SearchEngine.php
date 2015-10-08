@@ -2,6 +2,7 @@
 
 namespace DavidRojo\SearchEngineCrawler\Engines;
 
+use DavidRojo\SearchEngineCrawler\CrawlerResult;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -23,6 +24,18 @@ abstract class SearchEngine
      * @var [type]
      */
     protected $fetchUrl = "";
+
+    /**
+     * Max number of results to retrieve
+     * @var integer
+     */
+    protected $maxResults = 100;
+
+    /**
+     * Counts the number of results fetched as not all pages has 10 results
+     * @var integer
+     */
+    protected $resultsFetched = 0;
 
     /**
      * The current page code
@@ -48,6 +61,18 @@ abstract class SearchEngine
             [urlencode($keyword), $currentPage, $currentIndex, $currentIndex + $rpp, $rpp],
             $this->fetchUrl
         );
+    }
+
+    protected function increaseResultsFetched($n){
+        $this->resultsFetched += $n;
+        if ($this->resultsFetched >= $this->maxResults){
+            $this->finished = true;
+        }
+        echo "New results ".$this->resultsFetched ." (" . $n . ") >= " . $this->maxResults . "<br>";
+    }
+
+    public function addResult(CrawlerResult $r){
+        $this->results[] = $r;
     }
 
     public function hasNextPage(){
@@ -78,5 +103,53 @@ abstract class SearchEngine
 
     public function hasResults(){
         return count($this->results) > 0;
+    }
+
+    /**
+     * Gets the Counts the number of results fetched as not all pages has 10 results.
+     *
+     * @return integer
+     */
+    public function getResultsFetched()
+    {
+        return $this->resultsFetched;
+    }
+
+    /**
+     * Sets the Counts the number of results fetched as not all pages has 10 results.
+     *
+     * @param integer $resultsFetched the results fetched
+     *
+     * @return self
+     */
+    public function setResultsFetched($resultsFetched)
+    {
+        $this->resultsFetched = $resultsFetched;
+
+        return $this;
+    }
+
+    /**
+     * Gets the Max number of results to retrieve.
+     *
+     * @return integer
+     */
+    public function getMaxResults()
+    {
+        return $this->maxResults;
+    }
+
+    /**
+     * Sets the Max number of results to retrieve.
+     *
+     * @param integer $maxResults the max results
+     *
+     * @return self
+     */
+    public function setMaxResults($maxResults)
+    {
+        $this->maxResults = $maxResults;
+
+        return $this;
     }
 }
