@@ -55,6 +55,12 @@ abstract class SearchEngine
      */
     protected $finished = false;
 
+    /**
+     * Domain to end finding values
+     * @var string
+     */
+    protected $domain = null;
+
     public function buildUrl($keyword, $currentPage, $currentIndex, $rpp){
         return str_replace(
             ['[KEYWORD]', '[PAGE]', '[FROM]', '[TO]', '[RPP]'],
@@ -68,15 +74,33 @@ abstract class SearchEngine
         if ($this->resultsFetched >= $this->maxResults){
             $this->finished = true;
         }
-        echo "New results ".$this->resultsFetched ." (" . $n . ") >= " . $this->maxResults . "<br>";
     }
 
     public function addResult(CrawlerResult $r){
+        $r->setPosition(count($this->results));
+        
         $this->results[] = $r;
+
+        if ($this->domain != null){
+            if ($r->hasDomain($this->domain)) {
+                $this->finished = true;
+            }
+        }
     }
 
     public function hasNextPage(){
         return !$this->finished;
+    }
+
+    /**
+     * Clears previous searched data
+     * @return
+     */
+    public function clear(){
+        $this->results = [];
+        $this->finished = false;
+        $this->currentPageCode = "";
+        $this->resultsFetched = 0;
     }
 
     public abstract function parsePage($content);
@@ -149,6 +173,30 @@ abstract class SearchEngine
     public function setMaxResults($maxResults)
     {
         $this->maxResults = $maxResults;
+
+        return $this;
+    }
+
+    /**
+     * Gets the Domain to end finding values.
+     *
+     * @return string
+     */
+    public function getDomain()
+    {
+        return $this->domain;
+    }
+
+    /**
+     * Sets the Domain to end finding values.
+     *
+     * @param string $domain the domain
+     *
+     * @return self
+     */
+    public function setDomain($domain)
+    {
+        $this->domain = $domain;
 
         return $this;
     }

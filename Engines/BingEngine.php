@@ -50,7 +50,6 @@ class BingEngine extends SearchEngine{
 
         // Check if there are more pages to retrieve
         if($crawler->filter('.b_pag .sb_pagN')->count() == 0){
-            echo "No next page";
             $this->finished = true;
         }
     }

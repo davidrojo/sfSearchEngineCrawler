@@ -58,15 +58,50 @@ class SearchEngineCrawler
     }
 
     public function search($keyword = null){
+        $this->clear();
+
         if($keyword != null){
             $this->keyword = $keyword;
         }
 
-        while ($this->next() && $this->currentPage < 5){
+        while ($this->next()){
             continue;
         }
 
         return $this->engine->getResults();
+    }
+
+    public function searchForDomain($domain, $keyword = null){
+        $this->clear();
+        $this->engine->setDomain($domain);
+
+        if ($keyword != null){
+            $this->keyword = $keyword;
+        }
+
+        while($this->next()){
+            continue;
+        }
+
+        $results = $this->engine->getResults();
+        $last = $results[count($results)-1];
+
+        if($last->hasDomain($domain)){
+            var_dump($results[count($results)-1]);
+            return $results[count($results)-1];
+        }
+        else{
+            return null;
+        }
+    }
+
+    /**
+     * Clears previous crawlerd data
+     * @return [type] [description]
+     */
+    function clear(){
+        $this->currentPage = 0;
+        $this->engine->clear();
     }
 
     /**
@@ -93,7 +128,6 @@ class SearchEngineCrawler
 
     public function fetchPage(){
         $url = $this->engine->buildUrl($this->keyword, $this->currentPage, $this->engine->getResultsFetched(), $this->rpp);
-        echo "Fetching ".$url.'<br>';
         $code = $this->fetchPageCode($url);
         return mb_convert_encoding($code, 'HTML-ENTITIES', "UTF-8");
     }
