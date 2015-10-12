@@ -22,7 +22,17 @@ class CrawlerResult{
      */
     protected $url = "";
 
+    /**
+     * Current position result
+     * @var integer
+     */
+    protected $position;
     
+    public function hasDomain($domain){
+        $urlData = parse_url($this->url);
+
+        return $urlData['host'] == $domain;
+    }
 
     /**
      * Gets the Result title.
@@ -92,6 +102,30 @@ class CrawlerResult{
     public function setUrl($url)
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * Gets the Current position result.
+     *
+     * @return integer
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    /**
+     * Sets the Current position result.
+     *
+     * @param integer $position the position
+     *
+     * @return self
+     */
+    public function setPosition($position)
+    {
+        $this->position = $position;
 
         return $this;
     }
